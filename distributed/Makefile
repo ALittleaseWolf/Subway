@@ -9,22 +9,22 @@ SHARED=../shared
 DEP=$(SHARED)/argument_parsing.o $(SHARED)/graph.o $(SHARED)/timer.o $(SHARED)/gpu_kernels.o $(SHARED)/partitioner.o $(SHARED)/subway_utilities.o $(SHARED)/subgraph_generator.o $(SHARED)/subgraph.o
 
 
-all: make1 bfs_dis_async bfs_dis_sync
+all: make1 bfs_dis_sync bfs_dis_async 
 
 make1: bfs_part.cu
 	$(NC) -ccbin g++ -I../../common/inc -m64  $(NFLAGS) -o bfs_part.o -c bfs_part.cu $(CFLAGS)
-
-bfs_dis_async: bfs_dis_async.cpp bfs-async.cu bfs_part.o 
-	$(CC) -I../../common/inc -o bfs_dis_async.o -c bfs_dis_async.cpp $(CFLAGS) -L/usr/local/cuda/lib64 -lcudart
-	$(NC) -ccbin g++ -I../../common/inc -m64  $(NFLAGS) -o bfs-async.o -c bfs-async.cu $(CFLAGS)
-	$(CC) -o bfs_dis_async $(DEP) bfs-async.o bfs_dis_async.o bfs_part.o -L/usr/local/cuda/lib64 -lcudart
 
 bfs_dis_sync: bfs_dis_sync.cpp bfs-sync.cu bfs_part.o
 	$(CC) -I../../common/inc -o bfs_dis_sync.o -c bfs_dis_sync.cpp $(CFLAGS) -L/usr/local/cuda/lib64 -lcudart
 	$(NC) -ccbin g++ -I../../common/inc -m64  $(NFLAGS) -o bfs-sync.o -c bfs-sync.cu $(CFLAGS)
 	$(CC) -o bfs_dis_sync $(DEP) bfs-sync.o bfs_dis_sync.o bfs_part.o -L/usr/local/cuda/lib64 -lcudart
 
+bfs_dis_async: bfs_dis_async.cpp bfs-async.cu bfs_part.o 
+	$(CC) -I../../common/inc -o bfs_dis_async.o -c bfs_dis_async.cpp $(CFLAGS) -L/usr/local/cuda/lib64 -lcudart
+	$(NC) -ccbin g++ -I../../common/inc -m64  $(NFLAGS) -o bfs-async.o -c bfs-async.cu $(CFLAGS)
+	$(CC) -o bfs_dis_async $(DEP) bfs-async.o bfs_dis_async.o bfs_part.o -L/usr/local/cuda/lib64 -lcudart
 
 clean:
-	rm bfs-async.o bfs_dis_async.o bfs_part.o bfs_dis_async
+	rm bfs_part.o
 	rm bfs-sync.o bfs_dis_sync.o bfs_dis_sync
+	rm bfs-async.o bfs_dis_async.o  bfs_dis_async

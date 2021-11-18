@@ -26,20 +26,45 @@ int main(int argc, char *argv[])
     Graph<OutEdge> graph_cut[n];
     bfs_part(graph, graph_cut, n);
     graph.FreeGraph();
-    
+    // status
+    uint graph_value[graph.num_nodes];
+    for(uint i=0;i<graph.num_nodes;i++)
+    {
+        graph_value[i] = DIST_INFINITY;
+    }
+
+    if(world_rank != 0){
+        MPI_Status status;
+        MPI_Probe(world_rank - 1, 0, MPI_COMM_WORLD, &status);
+        int num_recv = 0;
+        MPI_Get_count(&status, MPI_UNSIGNED, &num_recv);
+        MPI_Recv(graph_value, num_recv, MPI_UNSIGNED, world_rank - 1, 0, MPI_COMM_WORLD, &status);
+        bfs_async(graph_cut[world_rank], arguments, graph_value);
+    }else{
+        bfs_async(graph_cut[world_rank], arguments, graph_value);
+    }
+
+    int num_send = 0;
+    for(uint i=0;i<graph.num_nodes;i++)
+    {
+        if(graph_value[i] != DIST_INFINITY)
+        {
+            num_send += 1;
+        }
+    }
+    MPI_Send(graph_value, num_send, MPI_UNSIGNED, (world_rank + 1) % world_size, 0, MPI_COMM_WORLD);
+
     if (world_rank == 0) {
-         // 得到当前进程的名字
-        char processor_name[MPI_MAX_PROCESSOR_NAME];
-        int name_len;
-        MPI_Get_processor_name(processor_name, &name_len);
-        cout << processor_name << endl;
-        bfs_async(graph_cut[0], arguments);
-    } else if (world_rank == 1) {
-        char processor_name[MPI_MAX_PROCESSOR_NAME];
-        int name_len;
-        MPI_Get_processor_name(processor_name, &name_len);
-        cout << processor_name << endl;
-        // bfs_async(graph_cut[1], arguments);
+        MPI_Status status;
+        MPI_Probe(world_size - 1, 0, MPI_COMM_WORLD, &status);
+        int num_recv = 0;
+        MPI_Get_count(&status, MPI_UNSIGNED, &num_recv);
+        MPI_Recv(graph_value, num_recv, MPI_UNSIGNED, world_size-1, 0, MPI_COMM_WORLD, &status);
+        for(uint i=0;i<graph.num_nodes && i < 10;i++)
+        {
+            cout <<i<< ":"<<graph_value[i]<<" ";
+        }
+        cout << endl;
     }
 
     MPI_CHECK(MPI_Finalize());

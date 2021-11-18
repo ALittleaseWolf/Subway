@@ -9,7 +9,7 @@
 #include "../shared/gpu_kernels.cuh"
 #include "../shared/subway_utilities.hpp"
 #include "bfs_dis.h"
-void bfs_sync(Graph<OutEdge> G, ArgumentParser arguments)
+void bfs_sync(Graph<OutEdge> G, ArgumentParser arguments, uint graph_value[])
 {
     cudaFree(0);
     
@@ -20,9 +20,12 @@ void bfs_sync(Graph<OutEdge> G, ArgumentParser arguments)
     graph.ReadGraphFromGraph(G);
     for(uint i=0; i<graph.num_nodes;i++)
     {
-        graph.value[i] = DIST_INFINITY;
+        graph.value[i] = graph_value[i];
+        if(graph_value[i] != DIST_INFINITY)
+        {
+            graph.label2[i] = true;
+        }
         graph.label1[i] = false;
-        graph.label2[i] = false;
     }
     graph.value[arguments.sourceNode] = 0;
 	graph.label1[arguments.sourceNode] = false;
@@ -88,6 +91,9 @@ void bfs_sync(Graph<OutEdge> G, ArgumentParser arguments)
 	
 	utilities::PrintResults(graph.value, min(30, graph.num_nodes));
 	
+    for(uint i=0;i<graph.num_nodes;i++)
+        graph_value[i] = graph_value[i]<graph.value[i]? graph_value[i]:graph.value[i];
+
     gpuErrorcheck(cudaFree(graph.d_outDegree));
     gpuErrorcheck(cudaFree(graph.d_value));
     gpuErrorcheck(cudaFree(graph.d_label1));

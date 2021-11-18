@@ -75,7 +75,9 @@ void bfs_part(Graph<OutEdge> graph, Graph<OutEdge> graph_cut[], uint n)
         // }
         // cout << endl;
     }
-
+    
+   // master nodes csr
+    uint mirror_max_node[n]={0};
     uint p=0;
     for(uint i=0;i<n;i++)
     {
@@ -87,22 +89,27 @@ void bfs_part(Graph<OutEdge> graph, Graph<OutEdge> graph_cut[], uint n)
             graph_cut[i].num_edges+=graph.outDegree[j];
         }
         uint te = graph_cut[i].num_edges;
-        
-        graph_cut[i].nodePointer = new uint[partition_offset[i+1]]{0};
-        
-        for(uint j=0; j<tn; j++)
-        {
-            graph_cut[i].nodePointer[p+j] = graph.nodePointer[p+j] - graph.nodePointer[p];
-            // cout<<p+j<<" ";
-        }
                
         graph_cut[i].edgeList = new OutEdge[te];
         for(uint j=0; j<te; j++)
 		{
 			graph_cut[i].edgeList[j].end = graph.edgeList[graph.nodePointer[p]+j].end;
+            mirror_max_node[i] = mirror_max_node[i] > graph_cut[i].edgeList[j].end ? mirror_max_node[i]:graph_cut[i].edgeList[j].end;
 		}
-       
+
+        // mirror nodes
+        graph_cut[i].num_nodes = max(partition_offset[i+1], mirror_max_node[i]+1);
+        graph_cut[i].nodePointer = new uint[graph_cut[i].num_nodes]{0};
+        for(uint j=0; j<tn; j++)
+        {
+            graph_cut[i].nodePointer[p+j] = graph.nodePointer[p+j] - graph.nodePointer[p];
+        }
+        if(graph_cut[i].num_nodes != tn)
+            for(uint j=tn;j<graph_cut[i].num_nodes;j++)
+            {
+                graph_cut[i].nodePointer[j] = graph_cut[i].nodePointer[tn-1] + graph.outDegree[tn-1];
+            }
+
         p = p + tn;
     }
-
 }

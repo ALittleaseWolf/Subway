@@ -10,7 +10,7 @@
 #include "../shared/subway_utilities.hpp"
 #include "bfs_dis.h"
 
-void bfs_async(Graph<OutEdge> G, ArgumentParser arguments)
+void bfs_async(Graph<OutEdge> G, ArgumentParser arguments, uint graph_value[])
 {
 	cudaFree(0);
 
@@ -24,14 +24,18 @@ void bfs_async(Graph<OutEdge> G, ArgumentParser arguments)
 	float readtime = timer.Finish();
 	cout << "Graph Reading finished in " << readtime/1000 << " (s).\n";
 	
-	for(unsigned int i=0; i<graph.num_nodes; i++)
-	{
-		graph.value[i] = DIST_INFINITY;
-		graph.label1[i] = true;
-		graph.label2[i] = false;
-	}
-	graph.value[arguments.sourceNode] = 0;
-	//graph.label[arguments.sourceNode] = true;
+   for(uint i=0; i<graph.num_nodes;i++)
+    {
+        graph.value[i] = graph_value[i];
+        if(graph_value[i] != DIST_INFINITY)
+        {
+            graph.label2[i] = true;
+        }
+        graph.label1[i] = false;
+    }
+    graph.value[arguments.sourceNode] = 0;
+	graph.label1[arguments.sourceNode] = false;
+	graph.label2[arguments.sourceNode] = true;
 
 
 	gpuErrorcheck(cudaMemcpy(graph.d_outDegree, graph.outDegree, graph.num_nodes * sizeof(unsigned int), cudaMemcpyHostToDevice));
@@ -115,12 +119,15 @@ void bfs_async(Graph<OutEdge> G, ArgumentParser arguments)
 	gpuErrorcheck(cudaMemcpy(graph.value, graph.d_value, graph.num_nodes*sizeof(uint), cudaMemcpyDeviceToHost));
 	
 	utilities::PrintResults(graph.value, min(30, graph.num_nodes));
+	for(uint i=0;i<graph.num_nodes;i++)
+        graph_value[i] = graph_value[i]<graph.value[i]? graph_value[i]:graph.value[i];
+
 	gpuErrorcheck(cudaFree(graph.d_outDegree));
     gpuErrorcheck(cudaFree(graph.d_value));
     gpuErrorcheck(cudaFree(graph.d_label1));
     gpuErrorcheck(cudaFree(graph.d_label2));
     gpuErrorcheck(cudaFreeHost(graph.edgeList));
-	if(arguments.hasOutput)
-		utilities::SaveResults(arguments.output, graph.value, graph.num_nodes);
+	// if(arguments.hasOutput)
+	// 	utilities::SaveResults(arguments.output, graph.value, graph.num_nodes);
 }
 
