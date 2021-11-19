@@ -26,10 +26,13 @@ public:
 	bool *d_label1;
 	bool *d_label2;
 	string graphFormat;
+	Graph();
     Graph(string graphFilePath, bool isWeighted);
     string GetFileExtension(string fileName);
     void AssignW8(uint w8, uint index);
     void ReadGraph();
+	void ReadGraphFromGraph(Graph<E> G);
+	void FreeGraph();
 };
 
 template <class E>

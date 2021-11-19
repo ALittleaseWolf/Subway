@@ -44,14 +44,7 @@ int main(int argc, char *argv[])
         bfs_async(graph_cut[world_rank], arguments, graph_value);
     }
 
-    int num_send = 0;
-    for(uint i=0;i<graph.num_nodes;i++)
-    {
-        if(graph_value[i] != DIST_INFINITY)
-        {
-            num_send += 1;
-        }
-    }
+    int num_send = graph.num_nodes;
     MPI_Send(graph_value, num_send, MPI_UNSIGNED, (world_rank + 1) % world_size, 0, MPI_COMM_WORLD);
 
     if (world_rank == 0) {

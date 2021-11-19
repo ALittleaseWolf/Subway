@@ -9,6 +9,11 @@ Graph<E>::Graph(string graphFilePath, bool isWeighted)
 }
 
 template <class E>
+Graph<E>::Graph()
+{
+}
+
+template <class E>
 string Graph<E>::GetFileExtension(string fileName)
 {
     if(fileName.find_last_of(".") != string::npos)
@@ -98,7 +103,7 @@ void Graph<E>::ReadGraph()
 				counter = counter + degree[i];
 			}
 			nodePointer[num_nodes] = num_edges;
-			uint *outDegreeCounter  = new uint[num_nodes];
+			uint *outDegreeCounter  = new uint[num_nodes]();
 			uint location;  
 			for(uint i=0; i<num_edges; i++)
 			{
@@ -176,7 +181,7 @@ void Graph<E>::ReadGraph()
 	
 	outDegree  = new unsigned int[num_nodes];
 	
-	for(uint i=1; i<num_nodes-1; i++)
+	for(uint i=1; i<num_nodes; i++)
 		outDegree[i-1] = nodePointer[i] - nodePointer[i-1];
 	outDegree[num_nodes-1] = num_edges - nodePointer[num_nodes-1];
 	
@@ -189,11 +194,50 @@ void Graph<E>::ReadGraph()
 	gpuErrorcheck(cudaMalloc(&d_label1, num_nodes * sizeof(bool)));
 	gpuErrorcheck(cudaMalloc(&d_label2, num_nodes * sizeof(bool)));
 	
-	cout << "Done reading.\n";
+	// cout << "Done reading.\n";
+	// cout << "Number of nodes = " << num_nodes << endl;
+	// cout << "Number of edges = " << num_edges << endl;
+}
+
+template <class E>
+void Graph<E>::ReadGraphFromGraph(Graph<E> G)
+{
+	num_nodes = G.num_nodes;
+	num_edges = G.num_edges;
+	nodePointer = new uint[num_nodes+1]{0};
+	gpuErrorcheck(cudaMallocHost(&edgeList, (num_edges) * sizeof(E)));
+	for(uint i=0;i<num_nodes;i++)
+		nodePointer[i] = G.nodePointer[i];
+	for(uint i=0;i<num_edges;i++)
+		edgeList[i] = G.edgeList[i];
+
+	outDegree  = new unsigned int[num_nodes];
+	
+	for(uint i=1; i<num_nodes; i++)
+		outDegree[i-1] = nodePointer[i] - nodePointer[i-1];
+	outDegree[num_nodes-1] = num_edges - nodePointer[num_nodes-1];
+	
+	label1 = new bool[num_nodes];
+	label2 = new bool[num_nodes];
+	value  = new unsigned int[num_nodes];
+	
+	gpuErrorcheck(cudaMalloc(&d_outDegree, num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_value, num_nodes * sizeof(unsigned int)));
+	gpuErrorcheck(cudaMalloc(&d_label1, num_nodes * sizeof(bool)));
+	gpuErrorcheck(cudaMalloc(&d_label2, num_nodes * sizeof(bool)));	
+	cout << "Done reading.\n";	
 	cout << "Number of nodes = " << num_nodes << endl;
 	cout << "Number of edges = " << num_edges << endl;
+}
 
-
+template <class E>
+void Graph<E>::FreeGraph()
+{
+	gpuErrorcheck(cudaFree(d_outDegree));
+    gpuErrorcheck(cudaFree(d_value));
+    gpuErrorcheck(cudaFree(d_label1));
+    gpuErrorcheck(cudaFree(d_label2));
+    gpuErrorcheck(cudaFreeHost(edgeList));
 }
 
 //--------------------------------------

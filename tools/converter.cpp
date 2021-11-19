@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 			nodePointer[i] = counter;
 			counter = counter + degree[i];
 		}
-		uint *outDegreeCounter  = new uint[num_nodes];
+		uint *outDegreeCounter  = new uint[num_nodes]{};
 		uint location;  
 		for(uint i=0; i<num_edges; i++)
 		{
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 			nodePointer[i] = counter;
 			counter = counter + degree[i];
 		}
-		uint *outDegreeCounter  = new uint[num_nodes];
+		uint *outDegreeCounter  = new uint[num_nodes]{};
 		uint location;  
 		for(uint i=0; i<num_edges; i++)
 		{

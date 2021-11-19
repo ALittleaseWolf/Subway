@@ -5,7 +5,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "bfs_dis.h"
+#include "cc_dis.h"
 #define MPI_CHECK(call) \
     if((call) != MPI_SUCCESS) { \
         cerr << "MPI error calling \""#call"\"\n"; \
@@ -24,14 +24,14 @@ int main(int argc, char *argv[])
 
     uint n = (uint)world_size;
     Graph<OutEdge> graph_cut[n];
-    bfs_part(graph, graph_cut, n);
+    part(graph, graph_cut, n);
     graph.FreeGraph();
     
     // status
     uint graph_value[graph.num_nodes];
     for(uint i=0;i<graph.num_nodes;i++)
     {
-        graph_value[i] = DIST_INFINITY;
+        graph_value[i] = i;
     }
 
     if(world_rank != 0){
@@ -40,9 +40,9 @@ int main(int argc, char *argv[])
         int num_recv = 0;
         MPI_Get_count(&status, MPI_UNSIGNED, &num_recv);
         MPI_Recv(graph_value, num_recv, MPI_UNSIGNED, world_rank - 1, 0, MPI_COMM_WORLD, &status);
-        bfs_sync(graph_cut[world_rank], arguments, graph_value);
+        cc_async(graph_cut[world_rank], arguments, graph_value);
     }else{
-        bfs_sync(graph_cut[world_rank], arguments, graph_value);
+        cc_async(graph_cut[world_rank], arguments, graph_value);
     }
 
     int num_send = 0;

@@ -1,6 +1,6 @@
-#include "../shared/globals.hpp"
-#include "../shared/graph.cuh"
-#include "../shared/argument_parsing.cuh"
+#include "../../shared/globals.hpp"
+#include "../../shared/graph.cuh"
+#include "../../shared/argument_parsing.cuh"
 extern "C" {
     void bfs_sync(Graph<OutEdge> G,ArgumentParser arguments,uint graph_value[]);
     void bfs_async(Graph<OutEdge> G, ArgumentParser arguments,uint graph_value[]);

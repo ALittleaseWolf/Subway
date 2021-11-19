@@ -1,13 +1,12 @@
+#include "../../shared/timer.hpp"
 
-#include "../shared/timer.hpp"
 
-
-#include "../shared/gpu_error_check.cuh"
-#include "../shared/subgraph.cuh"
-#include "../shared/subgraph_generator.cuh"
-#include "../shared/partitioner.cuh"
-#include "../shared/gpu_kernels.cuh"
-#include "../shared/subway_utilities.hpp"
+#include "../../shared/subgraph.cuh"
+#include "../../shared/partitioner.cuh"
+#include "../../shared/subgraph_generator.cuh"
+#include "../../shared/gpu_error_check.cuh"
+#include "../../shared/gpu_kernels.cuh"
+#include "../../shared/subway_utilities.hpp"
 #include "bfs_dis.h"
 void bfs_sync(Graph<OutEdge> G, ArgumentParser arguments, uint graph_value[])
 {

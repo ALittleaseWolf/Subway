@@ -1,6 +1,6 @@
-#include "bfs_dis.h"
-#include "../shared/gpu_error_check.cuh"
-void bfs_part(Graph<OutEdge> graph, Graph<OutEdge> graph_cut[], uint n)
+#include "sssp_dis.h"
+#include "../../shared/gpu_error_check.cuh"
+void part(Graph<OutEdgeWeighted> graph, Graph<OutEdgeWeighted> graph_cut[], uint n)
 {
     uint nodes = graph.num_nodes;
     uint edges = graph.num_edges;
@@ -90,10 +90,11 @@ void bfs_part(Graph<OutEdge> graph, Graph<OutEdge> graph_cut[], uint n)
         }
         uint te = graph_cut[i].num_edges;
                
-        graph_cut[i].edgeList = new OutEdge[te];
+        graph_cut[i].edgeList = new OutEdgeWeighted[te];
         for(uint j=0; j<te; j++)
 		{
 			graph_cut[i].edgeList[j].end = graph.edgeList[graph.nodePointer[p]+j].end;
+            graph_cut[i].edgeList[j].w8 = graph.edgeList[graph.nodePointer[p]+j].w8;
             mirror_max_node[i] = mirror_max_node[i] > graph_cut[i].edgeList[j].end ? mirror_max_node[i]:graph_cut[i].edgeList[j].end;
 		}
 
